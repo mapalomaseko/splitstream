@@ -1,0 +1,25 @@
+# Environment variables — NEVER commit this
+.env
+
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# Hardhat build artifacts (auto-generated — do not edit manually)
+artifacts/
+cache/
+
+# Next.js build output
+frontend/.next/
+frontend/out/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/settings.json
+.idea/
+
+# Test coverage reports
+coverage/

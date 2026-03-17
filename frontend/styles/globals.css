@@ -1,0 +1,11 @@
+/* ============================================================
+   STUDENT 4 — GLOBAL STYLES
+   ============================================================
+   Tailwind base imports. Add any global overrides below.
+   ============================================================ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* TODO: Add any global custom styles here */
