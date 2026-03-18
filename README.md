@@ -9,10 +9,10 @@ splits the payment between all artists instantly — no middleman, no trust requ
 ## Team
 | Role | Student | Owns |
 |------|---------|------|
-| Smart Contract Developer | Student 1 | /contracts |
-| Wallet & Transaction Lead | Student 2 | /frontend/context |
-| Infrastructure & DevOps | Student 3 | /scripts, hardhat.config.js |
-| UI/UX & IPFS Lead | Student 4 | /frontend/pages, /frontend/components |
+| Smart Contract Developer | Student 1 (Kodrah) | /contracts |
+| Wallet & Transaction Lead | Student 2 (Mapalo) | /frontend/context |
+| Infrastructure & DevOps | Student 3 (Kondwelani) | /scripts, hardhat.config.js |
+| UI/UX & IPFS Lead | Student 4 (Subilo) | /frontend/pages, /frontend/components |
 
 ## Quick Start
 ```bash
