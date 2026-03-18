@@ -35,19 +35,37 @@ export function Web3Provider({ children }) {
 
   // TODO: Write connectWallet function
   const connectWallet = async () => {
-    // Check MetaMask is installed
-    // if (!window.ethereum) { alert("Please install MetaMask"); return; }
-    //
-    // Request account access
-    // const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-    // setWalletAddress(accounts[0]);
-    //
-    // Set up Ethers provider and contract instance
-    // const _provider = new ethers.BrowserProvider(window.ethereum);
-    // const _signer = await _provider.getSigner();
-    // const _contract = new ethers.Contract(process.env.NEXT_PUBLIC_CONTRACT_ADDRESS, Splitter, _signer);
-    // setProvider(_provider);
-    // setContract(_contract);
+    // 1. Check MetaMask is installed [cite 15, 92]
+    if (!window.ethereum) { 
+      alert("Please install MetaMask to interact with this app"); 
+      return; 
+    }
+
+    try {
+      // 2. Request account access [cite 11, 35]
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const address = accounts[0];
+      setWalletAddress(address);
+
+      // 3. Set up Ethers provider [cite 15, 38]
+      const _provider = new ethers.BrowserProvider(window.ethereum);
+      
+      // 4. Get the signer for future write transactions [cite 15]
+      const _signer = await _provider.getSigner();
+
+      // 5. Create contract instance (S3A will provide the address via .env) [cite 39, 41]
+      const _contract = new ethers.Contract(
+        process.env.NEXT_PUBLIC_CONTRACT_ADDRESS, 
+        Splitter, 
+        _signer
+      );
+
+      setProvider(_provider);
+      setContract(_contract);
+      
+    } catch (error) {
+      console.error("User rejected the connection:", error);
+    }
   };
 
   // TODO: Write registerProduct function (Week 2)
