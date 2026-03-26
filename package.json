@@ -10,8 +10,8 @@
     "node": "npx hardhat node"
   },
   "devDependencies": {
-    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
-    "hardhat": "^2.19.0",
-    "dotenv": "^16.0.0"
+    "@nomicfoundation/hardhat-toolbox": "^6.1.2",
+    "dotenv": "^16.0.0",
+    "hardhat": "^2.22.3"
   }
 }
