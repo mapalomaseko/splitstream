@@ -19,7 +19,7 @@ export function Web3Provider({ children }) {
    */
   const connectWallet = async () => {
     if (typeof window.ethereum === 'undefined') {
-      alert("MetaMask is not installed. Please install it to use SplitStream."); [cite: 71, 93]
+      alert("MetaMask is not installed. Please install it to use SplitStream."); 
       return;
     }
 
@@ -61,7 +61,7 @@ export function Web3Provider({ children }) {
    * Takes CID from S4S and saves it on-chain via S1K's contract.
    */
   const registerProduct = async (cid, priceInEth) => {
-    if (!contract) throw new Error("Wallet not connected"); [cite: 93]
+    if (!contract) throw new Error("Wallet not connected"); 
 
     try {
       // priceInEth is converted to Wei for the contract [cite: 143]
