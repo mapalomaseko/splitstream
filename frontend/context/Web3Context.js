@@ -1,97 +1,123 @@
 // ============================================================
-// STUDENT 2 — WALLET CONNECTION CONTEXT
+// STUDENT 2 (S2M) — WALLET & TRANSACTION LEAD
 // ============================================================
-// This file manages the wallet connection state for the entire app.
-// Any component that needs the wallet address or provider imports from here.
-//
-// WEEK 1 TASKS:
-// [ ] Write connectWallet() — calls window.ethereum.request({ method: 'eth_requestAccounts' })
-// [ ] Store the wallet address in React state with useState
-// [ ] Export walletAddress and connectWallet so other components can use them
-// [ ] Test that clicking Connect Wallet shows the address on screen
-//
-// WEEK 2 TASKS:
-// [ ] Write buyProduct(productId, priceInEth) — triggers MetaMask payment popup
-// [ ] Write registerProduct(cid, priceInEth) — stores CID on the contract
-// [ ] Write getArtistBalance(address) — reads balance from contract (no gas needed)
-// [ ] Add error handling for: user rejects MetaMask, wrong network, no MetaMask installed
-//
-// HOW TO USE IN OTHER COMPONENTS:
-//   import { useWeb3 } from '../context/Web3Context'
-//   const { walletAddress, connectWallet } = useWeb3()
-// ============================================================
-
 import { createContext, useContext, useState, useEffect } from 'react';
 import { ethers } from 'ethers';
+// S3A provides this ABI after running 'npx hardhat compile' 
 import Splitter from '../abi/Splitter.json';
 
 const Web3Context = createContext();
 
 export function Web3Provider({ children }) {
-
   const [walletAddress, setWalletAddress] = useState('');
-  const [provider, setProvider] = useState(null);
   const [contract, setContract] = useState(null);
+  const [isConnecting, setIsConnecting] = useState(false);
 
-  // TODO: Write connectWallet function
+  /**
+   * WEEK 1: Connect Wallet Logic [cite: 36, 143]
+   * Asks MetaMask to connect and stores the signer for transactions.
+   */
   const connectWallet = async () => {
-    // 1. Check MetaMask is installed [cite 15, 92]
-    if (!window.ethereum) { 
-      alert("Please install MetaMask to interact with this app"); 
-      return; 
+    if (typeof window.ethereum === 'undefined') {
+      alert("MetaMask is not installed. Please install it to use SplitStream."); [cite: 71, 93]
+      return;
     }
 
     try {
-      // 2. Request account access [cite 11, 35]
+      setIsConnecting(true);
+      // Request account access [cite: 39]
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
       const address = accounts[0];
       setWalletAddress(address);
 
-      // 3. Set up Ethers provider [cite 15, 38]
-      const _provider = new ethers.BrowserProvider(window.ethereum);
-      
-      // 4. Get the signer for future write transactions [cite 15]
-      const _signer = await _provider.getSigner();
+      // Setup Ethers Provider & Signer [cite: 16, 124]
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
 
-      // 5. Create contract instance (S3A will provide the address via .env) [cite 39, 41]
-      const _contract = new ethers.Contract(
-        process.env.NEXT_PUBLIC_CONTRACT_ADDRESS, 
-        Splitter, 
-        _signer
+      // Create contract instance using S3A's env variable 
+      const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
+      const splitterContract = new ethers.Contract(
+        contractAddress,
+        Splitter.abi, // Ensure you reference the .abi property [cite: 21]
+        signer
       );
 
-      setProvider(_provider);
-      setContract(_contract);
-      
+      setContract(splitterContract);
+      console.log("Wallet Connected:", address);
     } catch (error) {
-      console.error("User rejected the connection:", error);
+      // Error handling for user rejection [cite: 71, 93]
+      if (error.code === 4001) {
+        console.error("User rejected the connection request.");
+      } else {
+        console.error("Connection error:", error);
+      }
+    } finally {
+      setIsConnecting(false);
     }
   };
 
-  // TODO: Write registerProduct function (Week 2)
+  /**
+   * WEEK 2: Register Product [cite: 18, 143]
+   * Takes CID from S4S and saves it on-chain via S1K's contract.
+   */
   const registerProduct = async (cid, priceInEth) => {
-    // if (!contract) { alert("Connect wallet first"); return; }
-    // const tx = await contract.registerProduct(cid, ethers.parseEther(priceInEth));
-    // await tx.wait(); // waits for blockchain confirmation
-    // return tx.hash;
+    if (!contract) throw new Error("Wallet not connected"); [cite: 93]
+
+    try {
+      // priceInEth is converted to Wei for the contract [cite: 143]
+      const tx = await contract.registerProduct(cid, ethers.parseEther(priceInEth));
+      await tx.wait(); // Wait for block confirmation [cite: 80]
+      return tx.hash;
+    } catch (error) {
+      console.error("Registration failed:", error);
+      throw error;
+    }
   };
 
-  // TODO: Write buyProduct function (Week 2)
+  /**
+   * WEEK 2: Buy Product [cite: 68, 143]
+   * Triggers MetaMask popup for the buyer.
+   */
   const buyProduct = async (productId, priceInEth) => {
-    // if (!contract) { alert("Connect wallet first"); return; }
-    // const tx = await contract.buyProduct(productId, {
-    //   value: ethers.parseEther(priceInEth)
-    // });
-    // await tx.wait();
-    // return tx.hash;
+    if (!contract) throw new Error("Wallet not connected");
+
+    try {
+      // Sends ETH to the contract's buy function [cite: 116, 163]
+      const tx = await contract.buyProduct(productId, {
+        value: ethers.parseEther(priceInEth)
+      });
+      await tx.wait();
+      return tx.hash;
+    } catch (error) {
+      console.error("Purchase failed:", error);
+      throw error;
+    }
   };
 
-  // TODO: Write getArtistBalance function (Week 2)
+  /**
+   * WEEK 2: Get Artist Balance [cite: 25, 143]
+   * Reads "Pending Balance" directly from the contract (no gas cost).
+   */
   const getArtistBalance = async (address) => {
-    // if (!contract) return "0";
-    // const balance = await contract.getArtistBalance(address);
-    // return ethers.formatEther(balance);
+    if (!contract || !address) return "0";
+    try {
+      // Call the mapping in Splitter.sol [cite: 155, 202]
+      const balance = await contract.getArtistBalance(address);
+      return ethers.formatEther(balance);
+    } catch (error) {
+      console.error("Error fetching balance:", error);
+      return "0";
+    }
   };
+
+  // Listen for account changes (Optional but professional)
+  useEffect(() => {
+    if (window.ethereum) {
+      window.ethereum.on('accountsChanged', (accounts) => {
+        setWalletAddress(accounts[0] || '');
+      });
+    }
+  }, []);
 
   return (
     <Web3Context.Provider value={{
@@ -100,6 +126,7 @@ export function Web3Provider({ children }) {
       registerProduct,
       buyProduct,
       getArtistBalance,
+      isConnecting
     }}>
       {children}
     </Web3Context.Provider>
