@@ -25,9 +25,9 @@ async function main() {
   // ⚠️ REPLACE THESE with your team's actual test wallet addresses
   // Get them from MetaMask > click account name > copy address
   const artistAddresses = [
-    "0xArtist1WalletAddressHere",
-    "0xArtist2WalletAddressHere",
-    "0xArtist3WalletAddressHere",
+    "0xbDA5747bFD65F08deb54cb465eB87D40e51B197E",
+    "0xdD2FD4581271e230360230F9337D5c0430Bf44C0",
+    "0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199",
   ];
 
   // Must add up to 100
