@@ -1,34 +1,64 @@
 // ============================================================
-// STUDENT 2 — UTILITY HELPERS
+// STUDENT 2 (S2M) — UTILITY HELPERS
 // ============================================================
-// Small helper functions used across the app.
+// Small helper functions used across the app to format data.
 // These are pure JS utilities — no React, no blockchain calls.
-//
-// TASKS:
-// [ ] Write formatAddress() — shortens 0x1234...5678 for display
-// [ ] Write formatEth() — converts wei to readable ETH string
-// [ ] Write isValidAddress() — checks if a string is a valid ETH address
 // ============================================================
 
 import { ethers } from 'ethers';
 
-// Shortens a wallet address for display: 0x1234...5678
+/**
+ * Shortens a wallet address for display: 0x1234...5678
+ * Used by S4S in Navbar.js and ConnectWallet.js.
+ */
 export function formatAddress(address) {
-  if (!address) return '';
+  if (!address || typeof address !== 'string') return '';
+  // Ensures the string is long enough to slice
+  if (address.length < 10) return address; 
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
 
-// Converts ETH string to Wei (for sending transactions)
+/**
+ * Converts ETH string/number to Wei (BigInt)
+ * Essential for buyProduct() and registerProduct() transactions[cite: 143].
+ */
 export function toWei(ethAmount) {
-  return ethers.parseEther(ethAmount.toString());
+  if (!ethAmount) return 0n;
+  try {
+    return ethers.parseEther(ethAmount.toString());
+  } catch (error) {
+    console.error("Invalid ETH amount for conversion:", error);
+    return 0n;
+  }
 }
 
-// Converts Wei to ETH string (for displaying balances)
+/**
+ * Converts Wei (BigInt) to a readable ETH string
+ * Used for displaying the "Pending Balance" in the Artist Dashboard[cite: 25, 143].
+ */
 export function fromWei(weiAmount) {
-  return ethers.formatEther(weiAmount);
+  if (!weiAmount) return "0.0";
+  try {
+    return ethers.formatEther(weiAmount);
+  } catch (error) {
+    console.error("Invalid Wei amount for conversion:", error);
+    return "0.0";
+  }
 }
 
-// Checks if a string is a valid Ethereum address
+/**
+ * Checks if a string is a valid Ethereum address
+ * Useful for validating artist addresses before S1K's contract tries to use them.
+ */
 export function isValidAddress(address) {
   return ethers.isAddress(address);
+}
+
+/**
+ * Formats a decimal number to a fixed decimal place for cleaner UI
+ * (Handy for S4S when displaying prices in the marketplace)
+ */
+export function formatDisplayEth(weiAmount, decimals = 4) {
+  const eth = fromWei(weiAmount);
+  return parseFloat(eth).toFixed(decimals);
 }
