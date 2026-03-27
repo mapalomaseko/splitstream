@@ -10,26 +10,8 @@
     "node": "npx hardhat node"
   },
   "devDependencies": {
-    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "@nomicfoundation/hardhat-toolbox": "^6.1.2",
     "dotenv": "^16.0.0",
-    "hardhat": "^2.28.6"
-  },
-  "main": "hardhat.config.js",
-  "directories": {
-    "test": "test"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/mapalomaseko/splitstream.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/mapalomaseko/splitstream/issues"
-  },
-  "homepage": "https://github.com/mapalomaseko/splitstream#readme",
-  "dependencies": {
-    "solc": "^0.8.20"
+    "hardhat": "^2.22.3"
   }
 }
