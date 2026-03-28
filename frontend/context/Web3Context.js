@@ -61,11 +61,7 @@ export function Web3Provider({ children }) {
    * Takes CID from S4S and saves it on-chain via S1K's contract.
    */
   const registerProduct = async (cid, priceInEth) => {
-<<<<<<< HEAD
     if (!contract) throw new Error("Wallet not connected"); 
-=======
-    if (!contract) throw new Error("Wallet not connected");
->>>>>>> 301f03129e2855e6424bd8621af2f17614a8132d
 
     try {
       // priceInEth is converted to Wei for the contract [cite: 143]
