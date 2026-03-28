@@ -19,11 +19,7 @@ export function Web3Provider({ children }) {
    */
   const connectWallet = async () => {
     if (typeof window.ethereum === 'undefined') {
-<<<<<<< HEAD
       alert("MetaMask is not installed. Please install it to use SplitStream."); 
-=======
-      alert("MetaMask is not installed. Please install it to use SplitStream.");
->>>>>>> 301f03129e2855e6424bd8621af2f17614a8132d
       return;
     }
 
