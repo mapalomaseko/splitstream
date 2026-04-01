@@ -22,10 +22,9 @@ module.exports = {
       url: "http://127.0.0.1:8545",
     },
 
-    // Sepolia testnet — uncomment and fill in .env before using (Week 2)
-    // sepolia: {
-    //   url: process.env.SEPOLIA_RPC_URL,
-    //   accounts: [process.env.PRIVATE_KEY],
-    // },
+      sepolia: {
+      url: process.env.SEPOLIA_RPC_URL,
+      accounts: [process.env.PRIVATE_KEY],
+    },
   },
 };
