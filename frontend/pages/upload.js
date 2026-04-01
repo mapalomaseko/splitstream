@@ -79,7 +79,7 @@ export default function Upload() {
       <div className="max-w-lg mx-auto px-6 py-20">
         <h1 className="text-3xl font-semibold tracking-tight mb-2">Upload your artwork</h1>
         <p className="text-gray-400 text-sm mb-10">
-          Your file goes to IPFS. The listing is registered on-chain. [cite: 109, 111]
+          Your file goes to IPFS. The listing is registered on-chain.
         </p>
 
         {/* Not connected warning [cite: 36, 49] */}
@@ -157,7 +157,7 @@ export default function Upload() {
                     target="_blank" 
                     rel="noreferrer"
                     className="text-xs text-green-700 underline mt-1 block">
-                    View on Etherscan [cite: 64, 89]
+                    View on Etherscan
                   </a>
                 </div>
               )}

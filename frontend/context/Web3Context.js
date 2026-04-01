@@ -25,29 +25,42 @@ export function Web3Provider({ children }) {
 
     try {
       setIsConnecting(true);
-      // Request account access [cite: 39]
+
+      // --- NEW: FORCE SEPOLIA SWITCH ---
+      // This ensures the popup says "Sepolia" and uses your 0.4 ETH balance
+      await ensureSepolia(); 
+
+      // Request account access
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
       const address = accounts[0];
       setWalletAddress(address);
 
-      // Setup Ethers Provider & Signer [cite: 16, 124]
+      // Setup Ethers Provider & Signer
+      // Note: Using BrowserProvider for Ethers v6
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
 
-      // Create contract instance using S3A's env variable 
+      // Create contract instance
       const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
+      
+      // Safety check: ensure address isn't null/undefined before creating contract
+      if (!contractAddress) {
+        throw new Error("Contract address missing in .env file");
+      }
+
       const splitterContract = new ethers.Contract(
         contractAddress,
-        Splitter.abi, // Ensure you reference the .abi property [cite: 21]
+        Splitter.abi, 
         signer
       );
 
       setContract(splitterContract);
-      console.log("Wallet Connected:", address);
+      console.log("Wallet Connected to Sepolia:", address);
+
     } catch (error) {
-      // Error handling for user rejection [cite: 71, 93]
+      // Handle user rejection or network switch cancellation
       if (error.code === 4001) {
-        console.error("User rejected the connection request.");
+        console.error("User rejected the request.");
       } else {
         console.error("Connection error:", error);
       }
@@ -65,7 +78,8 @@ export function Web3Provider({ children }) {
 
     try {
       // priceInEth is converted to Wei for the contract [cite: 143]
-      const tx = await contract.registerProduct(cid, ethers.parseEther(priceInEth));
+      // Ensure the price is a string before parsing to Ether
+      const tx = await contract.registerProduct(cid, ethers.parseEther(priceInEth.toString()));
       await tx.wait(); // Wait for block confirmation [cite: 80]
       return tx.hash;
     } catch (error) {
@@ -119,6 +133,34 @@ export function Web3Provider({ children }) {
     }
   }, []);
 
+  const ensureSepolia = async () => {
+  const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+  const sepoliaChainId = '0xaa36a7'; // Hex code for Sepolia
+
+  if (chainId !== sepoliaChainId) {
+    try {
+      await window.ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: sepoliaChainId }],
+      });
+    } catch (err) {
+      // This error code means the chain has not been added to MetaMask
+      if (err.code === 4902) {
+        await window.ethereum.request({
+          method: 'wallet_addEthereumChain',
+          params: [{
+            chainId: sepoliaChainId,
+            chainName: 'Sepolia Test Network',
+            nativeCurrency: { name: 'Sepolia ETH', symbol: 'SEP', decimals: 18 },
+            rpcUrls: ['https://rpc.sepolia.org'],
+            blockExplorerUrls: ['https://sepolia.etherscan.io'],
+          }],
+        });
+      }
+    }
+  }
+};
+
   return (
     <Web3Context.Provider value={{
       walletAddress,
@@ -126,6 +168,7 @@ export function Web3Provider({ children }) {
       registerProduct,
       buyProduct,
       getArtistBalance,
+      ensureSepolia,
       isConnecting
     }}>
       {children}
