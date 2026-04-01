@@ -124,9 +124,36 @@ export function Web3Provider({ children }) {
     }
   };
 
-  // Listen for account changes (Optional but professional)
+  // Initialize a read-only contract on load so marketplace works without wallet
   useEffect(() => {
-    if (window.ethereum) {
+    const initReadOnlyContract = () => {
+      try {
+        const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
+        if (!contractAddress) return;
+        
+        let provider;
+        if (typeof window !== 'undefined' && window.ethereum) {
+          provider = new ethers.BrowserProvider(window.ethereum);
+        } else {
+          // Fallback to a public RPC if the user has no MetaMask
+          provider = new ethers.JsonRpcProvider("https://rpc.sepolia.org");
+        }
+
+        const readOnlyContract = new ethers.Contract(
+          contractAddress,
+          Splitter.abi, 
+          provider
+        );
+        
+        setContract(prev => prev || readOnlyContract);
+      } catch (err) {
+        console.error("Failed to initialize read-only contract:", err);
+      }
+    };
+
+    initReadOnlyContract();
+
+    if (typeof window !== 'undefined' && window.ethereum) {
       window.ethereum.on('accountsChanged', (accounts) => {
         setWalletAddress(accounts[0] || '');
       });
@@ -161,6 +188,54 @@ export function Web3Provider({ children }) {
   }
 };
 
+const getProducts = async () => {
+  console.log("1. getProducts function called!"); // Is the function even running?
+  console.log("2. Current contract state:", contract); // Is it null or an object?
+
+  if (!contract) {
+    console.log("3. Error: Contract is null, exiting getProducts");
+    return [];
+  }
+  
+    try {
+      const allProducts = [];
+      // Grab total product count from the contract
+      const count = await contract.productCount();
+      const totalProducts = Number(count);
+      
+      console.log(`Found ${totalProducts} products to fetch.`);
+
+      for (let id = 0; id < totalProducts; id++) {
+        console.log("Fetching ID:", id);
+        try {
+          // Calling the singular 'getProduct' with the current ID
+          const data = await contract.getProduct(id);
+          
+          // data[0] = CID, data[1] = Owner, data[2] = Price
+          allProducts.push({
+            id: id.toString(),
+            cid: data[0],
+            owner: data[1],
+            price: ethers.formatEther(data[2]),
+            title: `Artwork #${id}`, // Since the ABI doesn't show a title
+            // A product is sold if the contract's "owner/creator" is updated or isn't tracked properly, 
+            // but for now we follow the structure
+          });
+        } catch (err) {
+          console.log(`Failed to fetch product ${id}:`, err);
+        }
+      }
+      
+      console.log("Fetched Products:", allProducts);
+      return allProducts;
+  } catch (error) {
+    console.error("Marketplace fetch error:", error);
+    return [];
+  }
+};
+
+
+
   return (
     <Web3Context.Provider value={{
       walletAddress,
@@ -169,6 +244,8 @@ export function Web3Provider({ children }) {
       buyProduct,
       getArtistBalance,
       ensureSepolia,
+      getProducts,
+      contract,
       isConnecting
     }}>
       {children}

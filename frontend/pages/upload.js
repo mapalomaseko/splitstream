@@ -51,11 +51,8 @@ export default function Upload() {
       // STEP 2: Register on Blockchain 
       setStatus('confirming');
       
-      // Convert human ETH price to Wei for the contract [cite: 44]
-      const priceInWei = toWei(price); 
-      
-      // Call your Web3Context function
-      const hash = await registerProduct(cid, priceInWei);
+      // Call your Web3Context function (it handles Wei conversion internally)
+      const hash = await registerProduct(cid, price);
       setTxHash(hash);
       
       setStatus('success');
