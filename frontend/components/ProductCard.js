@@ -28,10 +28,9 @@ export default function ProductCard({ id, title, price, cid, owner, isSold }) {
   const imageUrl = `https://gateway.pinata.cloud/ipfs/${cid}`;
 
   return (
-    <div className={`border border-gray-100 rounded-2xl overflow-hidden transition-all duration-300 ${isSold ? 'opacity-75 shadow-none' : 'hover:shadow-lg'}`}>
+    <div className={`section-card overflow-hidden transition-all duration-300 hover:-translate-y-1 ${isSold ? 'opacity-75 shadow-none' : 'hover:shadow-soft'}`}>
 
-      {/* Image Section */}
-      <div className="bg-gray-50 h-56 flex items-center justify-center relative overflow-hidden">
+      <div className="bg-brand-skySoft/60 h-56 flex items-center justify-center relative overflow-hidden">
         {cid ? (
           <img
             src={imageUrl}
@@ -39,27 +38,25 @@ export default function ProductCard({ id, title, price, cid, owner, isSold }) {
             className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
           />
         ) : (
-          <p className="text-xs text-gray-300 italic">No image data</p>
+          <p className="text-xs text-slate-400 italic">No image data</p>
         )}
         
         {isSold && (
-          <div className="absolute inset-0 bg-white/40 backdrop-blur-[2px] flex items-center justify-center">
-            <span className="bg-black text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">
+          <div className="absolute inset-0 bg-white/50 backdrop-blur-[2px] flex items-center justify-center">
+            <span className="bg-brand-navy text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">
               Sold Out
             </span>
           </div>
         )}
       </div>
 
-      {/* Info Section */}
       <div className="p-6">
         <div className="flex justify-between items-start mb-1">
-          <p className="font-semibold text-sm truncate">{title || 'Untitled Artwork'}</p>
-          <p className="text-xs font-bold text-gray-900">{price} ETH</p>
+          <p className="font-semibold text-sm truncate text-brand-navy">{title || 'Untitled Artwork'}</p>
+          <p className="text-xs font-bold text-brand-navy">{price} ETH</p>
         </div>
         
-        {/* Shorten the owner address for a cleaner look */}
-        <p className="text-[10px] font-mono text-gray-400 mb-6 truncate">
+        <p className="text-[10px] font-mono text-slate-500 mb-6 truncate">
           Artist: {owner}
         </p>
 
@@ -67,20 +64,19 @@ export default function ProductCard({ id, title, price, cid, owner, isSold }) {
           <button
             onClick={handleBuy}
             disabled={!walletAddress || status === 'confirming' || isSold}
-            className="w-full bg-gray-900 text-white text-xs py-3 rounded-xl hover:bg-black disabled:opacity-20 disabled:cursor-not-allowed transition-all active:scale-95">
+            className="w-full bg-brand-sky text-white text-xs py-3 rounded-xl hover:-translate-y-0.5 hover:shadow-glow disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95 font-bold">
             {status === 'confirming' ? 'Waiting for block...' : isSold ? 'Collected' : 'Purchase Piece'}
           </button>
 
-          {/* Status Messages & Etherscan Link */}
           {status === 'success' && (
-            <div className="bg-green-50 p-3 rounded-xl border border-green-100 animate-fade-in">
-              <p className="text-[10px] text-green-600 font-medium">✨ Ownership transferred!</p>
+            <div className="bg-brand-skySoft p-3 rounded-xl border border-brand-line animate-fade-up">
+              <p className="text-[10px] text-brand-navy font-medium">Ownership transferred.</p>
               {txHash && (
                 <a
                   href={`https://sepolia.etherscan.io/tx/${txHash}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-[9px] text-green-700 underline block mt-1 hover:text-green-900">
+                  className="text-[9px] text-brand-navy underline block mt-1 hover:text-slate-700">
                   View transaction on Etherscan →
                 </a>
               )}
@@ -88,7 +84,7 @@ export default function ProductCard({ id, title, price, cid, owner, isSold }) {
           )}
 
           {status === 'error' && (
-            <p className="text-[10px] text-red-500 text-center font-medium">Transaction failed. Check MetaMask.</p>
+            <p className="text-[10px] text-rose-500 text-center font-medium">Transaction failed. Check MetaMask.</p>
           )}
         </div>
       </div>

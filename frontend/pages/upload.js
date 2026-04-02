@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { useWeb3 } from '../context/Web3Context';
-import { toWei } from '../utils/contractHelpers';
-import Link from 'next/link';
 import Navbar from '../components/Navbar';
 
 export default function Upload() {
@@ -64,99 +62,109 @@ export default function Upload() {
   };
 
   return (
-    <main className="min-h-screen bg-white text-gray-900">
+    <main className="min-h-screen bg-brand-mist text-brand-ink">
       <Navbar />
 
-      <div className="max-w-lg mx-auto px-6 py-20">
-        <h1 className="text-3xl font-semibold tracking-tight mb-2">Upload your artwork</h1>
-        <p className="text-gray-400 text-sm mb-10">
-          Your file goes to IPFS. The listing is registered on-chain.
-        </p>
-
-        {/* Not connected warning [cite: 36, 49] */}
-        {!walletAddress ? (
-          <div className="border border-gray-100 rounded-2xl p-6 mb-8 flex items-center justify-between bg-gray-50">
-            <p className="text-sm text-gray-500">Connect your wallet to upload</p>
-            <button
-              onClick={connectWallet}
-              className="bg-gray-900 text-white text-sm px-4 py-2 rounded-full hover:bg-gray-700 transition-colors">
-              Connect Wallet
-            </button>
+      <section className="shell py-12 md:py-16">
+        <div className="max-w-3xl mx-auto section-card bg-white overflow-hidden">
+          <div className="bg-brand-navy text-white p-8 md:p-10 relative overflow-hidden">
+            <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full glow-orb animate-float-slow" />
+            <p className="label-kicker mb-2">Creator Studio</p>
+            <h1 className="display-title text-4xl md:text-5xl mb-3">Upload your artwork</h1>
+            <p className="text-slate-300 text-sm md:text-base max-w-xl">
+              Your file is pinned to IPFS and the listing is registered on-chain in one flow.
+            </p>
           </div>
-        ) : (
-          <div className="flex flex-col gap-6">
-            {/* Form Fields [cite: 44] */}
-            <div>
-              <label className="text-xs text-gray-400 uppercase tracking-widest mb-2 block font-bold">Title</label>
-              <input
-                type="text"
-                placeholder="e.g. Sunset #001"
-                value={title}
-                onChange={e => setTitle(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gray-900 transition-all"
-              />
-            </div>
 
-            <div>
-              <label className="text-xs text-gray-400 uppercase tracking-widest mb-2 block font-bold">Price (ETH)</label>
-              <input
-                type="number"
-                step="0.01"
-                placeholder="0.05"
-                value={price}
-                onChange={e => setPrice(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gray-900 transition-all"
-              />
-            </div>
+          <div className="p-7 md:p-10">
 
-            <div>
-              <label className="text-xs text-gray-400 uppercase tracking-widest mb-2 block font-bold">Artwork File</label>
-              <div className="border border-dashed border-gray-200 rounded-xl px-4 py-8 text-center bg-gray-50 hover:bg-gray-100 transition-colors">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={e => setFile(e.target.files[0])}
-                  className="hidden"
-                  id="file-input"
-                />
-                <label htmlFor="file-input" className="cursor-pointer">
-                  {file ? (
-                    <span className="text-sm text-gray-900 font-medium">{file.name}</span>
-                  ) : (
-                    <span className="text-sm text-gray-400">Click to select an image from your device</span>
-                  )}
-                </label>
+            {!walletAddress ? (
+              <div className="border border-brand-line rounded-xl p-6 mb-2 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-brand-skySoft">
+                <p className="text-sm text-slate-600">Connect your wallet to publish artwork.</p>
+                <button
+                  onClick={connectWallet}
+                  className="btn-primary"
+                >
+                  Connect Wallet
+                </button>
               </div>
-            </div>
-
-            <button
-              onClick={handleUpload}
-              disabled={status === 'uploading' || status === 'confirming' || !title || !price || !file}
-              className="w-full bg-gray-900 text-white text-sm py-4 rounded-full hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed mt-4 font-semibold transition-all shadow-sm">
-              {status === 'idle' ? 'Upload & Register' : 'Processing...'}
-            </button>
-
-            {/* Transaction Status Feedbacks  */}
-            <div className="mt-6 text-center space-y-2">
-              {status === 'uploading' && <p className="text-sm text-blue-500 animate-pulse">Uploading to IPFS via Pinata...</p>}
-              {status === 'confirming' && <p className="text-sm text-orange-500 animate-pulse">Awaiting Blockchain Confirmation...</p>}
-              {status === 'success' && (
-                <div className="bg-green-50 p-4 rounded-xl">
-                  <p className="text-sm text-green-600 font-medium italic">Successfully registered on-chain!</p>
-                  <a 
-                    href={`https://sepolia.etherscan.io/tx/${txHash}`} 
-                    target="_blank" 
-                    rel="noreferrer"
-                    className="text-xs text-green-700 underline mt-1 block">
-                    View on Etherscan
-                  </a>
+            ) : (
+              <div className="flex flex-col gap-6">
+                <div>
+                  <label className="text-xs text-slate-500 uppercase tracking-widest mb-2 block font-bold">Title</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Sunset #001"
+                    value={title}
+                    onChange={e => setTitle(e.target.value)}
+                    className="w-full border border-brand-line rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-sky transition-all"
+                  />
                 </div>
-              )}
-              {status === 'error' && <p className="text-sm text-red-500">Transaction failed. Check MetaMask and try again.</p>}
-            </div>
+
+                <div>
+                  <label className="text-xs text-slate-500 uppercase tracking-widest mb-2 block font-bold">Price (ETH)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    placeholder="0.05"
+                    value={price}
+                    onChange={e => setPrice(e.target.value)}
+                    className="w-full border border-brand-line rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-sky transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs text-slate-500 uppercase tracking-widest mb-2 block font-bold">Artwork File</label>
+                  <div className="border border-dashed border-brand-line rounded-xl px-4 py-10 text-center bg-brand-skySoft/60 hover:bg-brand-skySoft transition-colors">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={e => setFile(e.target.files[0])}
+                      className="hidden"
+                      id="file-input"
+                    />
+                    <label htmlFor="file-input" className="cursor-pointer">
+                      {file ? (
+                        <span className="text-sm text-brand-navy font-semibold">{file.name}</span>
+                      ) : (
+                        <span className="text-sm text-slate-600">Click to select an image from your device</span>
+                      )}
+                    </label>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleUpload}
+                  disabled={status === 'uploading' || status === 'confirming' || !title || !price || !file}
+                  className="w-full bg-brand-sky text-white text-sm py-4 rounded-xl hover:-translate-y-0.5 hover:shadow-glow disabled:opacity-40 disabled:cursor-not-allowed mt-2 font-bold transition-all"
+                >
+                  {status === 'idle' ? 'Upload & Register' : 'Processing...'}
+                </button>
+
+                <div className="mt-4 space-y-2">
+                  {status === 'uploading' && <p className="text-sm text-brand-sky animate-pulse">Uploading to IPFS via Pinata...</p>}
+                  {status === 'confirming' && <p className="text-sm text-brand-navy animate-pulse">Awaiting blockchain confirmation...</p>}
+                  {status === 'success' && (
+                    <div className="bg-brand-skySoft p-4 rounded-xl border border-brand-line animate-fade-up">
+                      <p className="text-sm text-brand-navy font-semibold">Successfully registered on-chain.</p>
+                      <a
+                        href={`https://sepolia.etherscan.io/tx/${txHash}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-xs text-brand-navy underline mt-1 inline-block"
+                      >
+                        View on Etherscan
+                      </a>
+                    </div>
+                  )}
+                  {status === 'error' && <p className="text-sm text-rose-500">Transaction failed. Check MetaMask and try again.</p>}
+                </div>
+
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </div>
+      </section>
     </main>
   );
 }

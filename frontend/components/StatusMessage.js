@@ -2,28 +2,28 @@ export default function StatusMessage({ status, message, txHash }) {
   if (status === 'idle') return null;
 
   const styles = {
-    loading: 'text-gray-400',
-    success: 'text-green-500',
-    error: 'text-red-400',
+    loading: 'text-slate-500',
+    success: 'text-brand-navy',
+    error: 'text-rose-500',
   };
 
   const icons = {
-    loading: '○',
+    loading: '•',
     success: '✓',
-    error: '✕',
+    error: 'x',
   };
 
   return (
-    <div className="mt-6 text-center">
-      <p className={"text-sm " + styles[status]}>
+    <div className="mt-6 rounded-xl border border-brand-line bg-white p-4 text-left animate-fade-up">
+      <p className={"text-sm font-medium " + styles[status]}>
         {icons[status]} {message}
       </p>
       {txHash && status === 'success' && (
-        
+        <a
           href={"https://sepolia.etherscan.io/tx/" + txHash}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-xs text-gray-400 hover:text-gray-900 mt-1 block">
+          className="text-xs text-brand-navy hover:text-slate-700 mt-2 inline-block underline">
           View on Etherscan →
         </a>
       )}
