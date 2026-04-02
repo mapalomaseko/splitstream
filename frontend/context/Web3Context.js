@@ -7,11 +7,22 @@ import { ethers } from 'ethers';
 import Splitter from '../abi/Splitter.json';
 
 const Web3Context = createContext();
+const TEAM_ARTIST_ADDRESSES = [
+  '0x8F2eDFfB8a634929616B853B7d1743dC7A7eDbEF',
+  '0xAE9e2CD45cAce72d144a606c73320d318a49F4D0',
+  '0xF9d984985935e72Ae3F0055775B7d72dc37fb53f',
+].map((address) => address.toLowerCase());
+
+const DEPLOYMENT_BLOCK = Number.parseInt(process.env.NEXT_PUBLIC_DEPLOY_BLOCK || '0', 10) || 0;
+
+const normalizeAddress = (address) => (address || '').toLowerCase();
 
 export function Web3Provider({ children }) {
   const [walletAddress, setWalletAddress] = useState('');
   const [contract, setContract] = useState(null);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [isArtist, setIsArtist] = useState(false);
+  const [salesActivity, setSalesActivity] = useState(0);
 
   /**
    * WEEK 1: Connect Wallet Logic [cite: 36, 143]
@@ -124,6 +135,12 @@ export function Web3Provider({ children }) {
     }
   };
 
+  // Keep role state in sync with the active account.
+  useEffect(() => {
+    const connected = normalizeAddress(walletAddress);
+    setIsArtist(TEAM_ARTIST_ADDRESSES.includes(connected));
+  }, [walletAddress]);
+
   // Initialize a read-only contract on load so marketplace works without wallet
   useEffect(() => {
     const initReadOnlyContract = () => {
@@ -153,12 +170,37 @@ export function Web3Provider({ children }) {
 
     initReadOnlyContract();
 
+    let handleAccountsChanged;
     if (typeof window !== 'undefined' && window.ethereum) {
-      window.ethereum.on('accountsChanged', (accounts) => {
+      handleAccountsChanged = (accounts) => {
         setWalletAddress(accounts[0] || '');
-      });
+      };
+      window.ethereum.on('accountsChanged', handleAccountsChanged);
     }
+
+    return () => {
+      if (typeof window !== 'undefined' && window.ethereum && handleAccountsChanged) {
+        window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+      }
+    };
   }, []);
+
+  // Listen for purchases so UI can refresh dashboard and collection data in near real-time.
+  useEffect(() => {
+    if (!contract || !contract.on) return;
+
+    const handleProductPurchased = () => {
+      setSalesActivity((prev) => prev + 1);
+    };
+
+    contract.on('ProductPurchased', handleProductPurchased);
+
+    return () => {
+      if (contract.off) {
+        contract.off('ProductPurchased', handleProductPurchased);
+      }
+    };
+  }, [contract]);
 
   const ensureSepolia = async () => {
   const chainId = await window.ethereum.request({ method: 'eth_chainId' });
@@ -234,19 +276,126 @@ const getProducts = async () => {
   }
 };
 
+const getPurchaseEvents = async () => {
+  if (!contract) return [];
+
+  try {
+    const filter = contract.filters.ProductPurchased();
+    const logs = await contract.queryFilter(filter, DEPLOYMENT_BLOCK, 'latest');
+
+    return logs.map((log) => {
+      const productId = Number(log.args?.id ?? log.args?.[0] ?? 0);
+      const buyer = log.args?.buyer ?? log.args?.[1] ?? '';
+      const amount = log.args?.amount ?? log.args?.[2] ?? 0;
+
+      return {
+        productId,
+        buyer,
+        amountEth: ethers.formatEther(amount),
+        txHash: log.transactionHash,
+        blockNumber: log.blockNumber,
+      };
+    });
+  } catch (error) {
+    console.error('Error fetching purchase history:', error);
+    return [];
+  }
+};
+
+const getBuyerPurchases = async (buyerAddress) => {
+  if (!buyerAddress) return [];
+
+  try {
+    const [events, allProducts] = await Promise.all([
+      getPurchaseEvents(),
+      getProducts(),
+    ]);
+
+    const targetBuyer = normalizeAddress(buyerAddress);
+    const productMap = new Map(allProducts.map((product) => [Number(product.id), product]));
+
+    return events
+      .filter((sale) => normalizeAddress(sale.buyer) === targetBuyer)
+      .map((sale) => {
+        const product = productMap.get(sale.productId);
+        if (!product) return null;
+
+        return {
+          ...product,
+          txHash: sale.txHash,
+          buyer: sale.buyer,
+          purchasedPrice: sale.amountEth,
+          purchasedAtBlock: sale.blockNumber,
+        };
+      })
+      .filter(Boolean)
+      .sort((a, b) => b.purchasedAtBlock - a.purchasedAtBlock);
+  } catch (error) {
+    console.error('Error building buyer collection:', error);
+    return [];
+  }
+};
+
+const getArtistDashboardStats = async (artistAddress) => {
+  if (!artistAddress) {
+    return {
+      artistProducts: [],
+      worksUploaded: 0,
+      totalSales: 0,
+      revenueReceived: '0',
+    };
+  }
+
+  try {
+    const [allProducts, events, revenueReceived] = await Promise.all([
+      getProducts(),
+      getPurchaseEvents(),
+      getArtistBalance(artistAddress),
+    ]);
+
+    const normalizedArtist = normalizeAddress(artistAddress);
+    const artistProducts = allProducts.filter(
+      (product) => normalizeAddress(product.owner) === normalizedArtist
+    );
+
+    const artistProductIds = new Set(artistProducts.map((product) => Number(product.id)));
+    const totalSales = events.filter((sale) => artistProductIds.has(sale.productId)).length;
+
+    return {
+      artistProducts,
+      worksUploaded: artistProducts.length,
+      totalSales,
+      revenueReceived,
+    };
+  } catch (error) {
+    console.error('Error building artist dashboard stats:', error);
+    return {
+      artistProducts: [],
+      worksUploaded: 0,
+      totalSales: 0,
+      revenueReceived: '0',
+    };
+  }
+};
+
 
 
   return (
     <Web3Context.Provider value={{
       walletAddress,
+      isArtist,
       connectWallet,
       registerProduct,
       buyProduct,
       getArtistBalance,
       ensureSepolia,
       getProducts,
+      getBuyerPurchases,
+      getArtistDashboardStats,
+      getPurchaseEvents,
       contract,
-      isConnecting
+      isConnecting,
+      salesActivity,
     }}>
       {children}
     </Web3Context.Provider>

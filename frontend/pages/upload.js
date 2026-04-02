@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useWeb3 } from '../context/Web3Context';
 import { toWei } from '../utils/contractHelpers';
 import Link from 'next/link';
+import Navbar from '../components/Navbar';
 
 export default function Upload() {
   const { walletAddress, connectWallet, registerProduct } = useWeb3();
@@ -64,14 +65,7 @@ export default function Upload() {
 
   return (
     <main className="min-h-screen bg-white text-gray-900">
-      {/* Navigation [cite: 42] */}
-      <nav className="flex justify-between items-center px-10 py-6 border-b border-gray-100">
-        <Link href="/" className="font-semibold text-lg tracking-tight">SplitStream</Link>
-        <div className="flex items-center gap-8">
-          <Link href="/marketplace" className="text-sm text-gray-500 hover:text-gray-900">Marketplace</Link>
-          <Link href="/upload" className="text-sm text-gray-900 font-medium">Upload</Link>
-        </div>
-      </nav>
+      <Navbar />
 
       <div className="max-w-lg mx-auto px-6 py-20">
         <h1 className="text-3xl font-semibold tracking-tight mb-2">Upload your artwork</h1>

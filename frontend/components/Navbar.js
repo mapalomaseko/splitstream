@@ -1,9 +1,11 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import ConnectWallet from './ConnectWallet';
+import { useWeb3 } from '../context/Web3Context';
 
 export default function Navbar() {
   const router = useRouter();
+  const { isArtist } = useWeb3();
 
   const linkClass = (path) =>
     router.pathname === path
@@ -22,6 +24,11 @@ export default function Navbar() {
         <Link href="/upload" className={linkClass('/upload')}>
           Upload
         </Link>
+        {isArtist && (
+          <Link href="/dashboard" className={linkClass('/dashboard')}>
+            Dashboard
+          </Link>
+        )}
         <ConnectWallet />
       </div>
     </nav>

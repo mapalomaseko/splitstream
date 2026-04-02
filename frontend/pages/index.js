@@ -14,7 +14,7 @@
 
 import Head from 'next/head';
 import Link from 'next/link';
-import ConnectWallet from '../components/ConnectWallet';
+import Navbar from '../components/Navbar';
 
 export default function Home() {
   return (
@@ -25,19 +25,7 @@ export default function Home() {
 
       <main className="min-h-screen bg-white text-gray-900">
 
-        {/* Navigation */}
-        <nav className="flex justify-between items-center px-10 py-6 border-b border-gray-100">
-          <span className="font-semibold text-lg tracking-tight">SplitStream</span>
-          <div className="flex items-center gap-8">
-            <Link href="/marketplace" className="text-sm text-gray-500 hover:text-gray-900">
-              Marketplace
-            </Link>
-            <Link href="/upload" className="text-sm text-gray-500 hover:text-gray-900">
-              Upload
-            </Link>
-            <ConnectWallet />
-          </div>
-        </nav>
+        <Navbar />
 
         {/* Hero */}
         <section className="flex flex-col items-center justify-center text-center px-6 py-40">
