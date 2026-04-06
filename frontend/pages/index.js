@@ -1,17 +1,3 @@
-// ============================================================
-// STUDENT 4 — PAGE 1: LANDING PAGE
-// ============================================================
-// The first thing visitors see. Explains the platform and
-// prompts them to connect their wallet.
-//
-// TASKS:
-// [ ] Build the hero section: headline, subheading, CTA button
-// [ ] Add the ConnectWallet component
-// [ ] Add navigation links to /marketplace and /upload
-// [ ] Style with Tailwind CSS
-// [ ] Show connected wallet address if already connected
-// ============================================================
-
 import Head from 'next/head';
 import Link from 'next/link';
 import Navbar from '../components/Navbar';

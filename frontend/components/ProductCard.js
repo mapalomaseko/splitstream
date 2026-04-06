@@ -9,14 +9,14 @@ export default function ProductCard({ id, title, price, cid, owner, isSold }) {
 
   const handleBuy = async () => {
     if (!walletAddress) return alert("Please connect your wallet first");
-    
+
     try {
       setStatus('confirming');
-      
+
       // We pass the ID and the raw price (e.g., "0.05") 
       // The context handles the parseEther conversion
       const hash = await buyProduct(id, price);
-      
+
       setTxHash(hash);
       setStatus('success');
     } catch (error) {
@@ -40,7 +40,7 @@ export default function ProductCard({ id, title, price, cid, owner, isSold }) {
         ) : (
           <p className="text-xs text-slate-400 italic">No image data</p>
         )}
-        
+
         {isSold && (
           <div className="absolute inset-0 bg-white/50 backdrop-blur-[2px] flex items-center justify-center">
             <span className="bg-brand-navy text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">
@@ -55,7 +55,7 @@ export default function ProductCard({ id, title, price, cid, owner, isSold }) {
           <p className="font-semibold text-sm truncate text-brand-navy">{title || 'Untitled Artwork'}</p>
           <p className="text-xs font-bold text-brand-navy">{price} ETH</p>
         </div>
-        
+
         <p className="text-[10px] font-mono text-slate-500 mb-6 truncate">
           Artist: {owner}
         </p>

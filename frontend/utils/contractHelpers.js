@@ -1,9 +1,3 @@
-// ============================================================
-// STUDENT 2 (S2M) — UTILITY HELPERS
-// ============================================================
-// Small helper functions used across the app to format data.
-// These are pure JS utilities — no React, no blockchain calls.
-// ============================================================
 
 import { ethers } from 'ethers';
 
@@ -14,7 +8,7 @@ import { ethers } from 'ethers';
 export function formatAddress(address) {
   if (!address || typeof address !== 'string') return '';
   // Ensures the string is long enough to slice
-  if (address.length < 10) return address; 
+  if (address.length < 10) return address;
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
 

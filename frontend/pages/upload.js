@@ -9,16 +9,11 @@ export default function Upload() {
   const [title, setTitle] = useState('');
   const [price, setPrice] = useState('');
   const [file, setFile] = useState(null);
-  
+
   // UI Status State 
   const [status, setStatus] = useState('idle'); // idle, uploading, confirming, success, error
   const [txHash, setTxHash] = useState('');
 
-  /**
-   * THE INTEGRATION FLOW (Week 2) 
-   * 1. Upload file to Pinata (IPFS) -> Get CID
-   * 2. Call Smart Contract registerProduct(cid, price)
-   */
   const handleUpload = async () => {
     if (!file || !title || !price) {
       alert("Please fill in all fields");
@@ -32,7 +27,7 @@ export default function Upload() {
       // In a real setup, S4S would provide the 'uploadToPinata' utility
       const formData = new FormData();
       formData.append('file', file);
-      
+
       const res = await fetch("https://api.pinata.cloud/pinning/pinFileToIPFS", {
         method: "POST",
         headers: {
@@ -40,20 +35,20 @@ export default function Upload() {
         },
         body: formData,
       });
-      
+
       const pinataData = await res.json();
       if (!pinataData.IpfsHash) throw new Error("IPFS Upload Failed");
-      
+
       const cid = pinataData.IpfsHash;
       console.log("IPFS CID:", cid);
 
       // STEP 2: Register on Blockchain 
       setStatus('confirming');
-      
+
       // Call your Web3Context function (it handles Wei conversion internally)
       const hash = await registerProduct(cid, price);
       setTxHash(hash);
-      
+
       setStatus('success');
     } catch (error) {
       console.error("Upload/Registration Error:", error);
