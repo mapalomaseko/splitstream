@@ -21,7 +21,7 @@ export default function Home() {
           <div className="shell relative py-24 md:py-32 text-center animate-fade-up">
             <p className="label-kicker mb-6">Built for Web3 Artists</p>
             <h1 className="display-title text-5xl md:text-7xl max-w-4xl mx-auto mb-6">
-              Own the gallery.
+              Own the gallery.<br></br>
               <span className="text-brand-sky"> Automate every split.</span>
             </h1>
             <p className="max-w-2xl mx-auto text-slate-300 text-base md:text-lg leading-relaxed mb-10">

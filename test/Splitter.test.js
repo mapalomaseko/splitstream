@@ -1,15 +1,3 @@
-// ============================================================
-// STUDENT 1 — CONTRACT TESTS
-// ============================================================
-// Run with: npx hardhat test
-//
-// TASKS:
-// ✔ Write a test that deploys Splitter with 3 artists (40/30/30 split)
-// ✔ Write a test that sends 1 ETH and checks each artist received the right amount
-// ✔ Write a test that tries to deploy with percentages != 100 and expects a revert
-// ✔ Write a test that registers a product CID and reads it back
-// ============================================================
-
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 

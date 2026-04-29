@@ -56,10 +56,6 @@ export default function ProductCard({ id, title, price, cid, owner, isSold }) {
           <p className="text-xs font-bold text-brand-navy">{price} ETH</p>
         </div>
 
-        <p className="text-[10px] font-mono text-slate-500 mb-6 truncate">
-          Artist: {owner}
-        </p>
-
         <div className="flex flex-col gap-3">
           <button
             onClick={handleBuy}

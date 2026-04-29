@@ -1,21 +1,3 @@
-// ============================================================
-// STUDENT 3 — DEPLOYMENT SCRIPT
-// ============================================================
-// Deploys Splitter.sol to the network specified in the command.
-//
-// TASKS:
-// [ ] Fill in the real artist wallet addresses below before deploying
-// [ ] Confirm percentages add up to exactly 100
-// [ ] After deployment, copy the contract address to .env
-// [ ] Distribute the new ABI to Students 2 and 4
-// [ ] For Sepolia: post the Etherscan link in team chat
-//
-// HOW THE ABI IS GENERATED:
-// When you run this script, Hardhat auto-compiles first.
-// The ABI appears at: artifacts/contracts/Splitter.sol/Splitter.json
-// That file is what Students 2 and 4 import into the frontend.
-// ============================================================
-
 const hre = require("hardhat");
 
 async function main() {

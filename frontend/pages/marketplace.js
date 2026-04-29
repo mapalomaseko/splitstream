@@ -62,7 +62,7 @@ export default function Marketplace() {
 
   const handleBuy = async (product) => {
     if (!walletAddress) return alert("Please connect your wallet first");
-    
+
     try {
       setBuyingId(product.id);
       await buyProduct(product.id, product.price);
@@ -102,17 +102,15 @@ export default function Marketplace() {
               <div className="rounded-xl border border-brand-line p-1 flex bg-white shadow-soft">
                 <button
                   onClick={() => setViewMode('all')}
-                  className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                    viewMode === 'all' ? 'bg-brand-sky text-white shadow-soft' : 'text-slate-600 hover:text-brand-navy'
-                  }`}
+                  className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${viewMode === 'all' ? 'bg-brand-sky text-white shadow-soft' : 'text-slate-600 hover:text-brand-navy'
+                    }`}
                 >
                   Marketplace
                 </button>
                 <button
                   onClick={() => setViewMode('collection')}
-                  className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                    viewMode === 'collection' ? 'bg-brand-sky text-white shadow-soft' : 'text-slate-600 hover:text-brand-navy'
-                  }`}
+                  className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${viewMode === 'collection' ? 'bg-brand-sky text-white shadow-soft' : 'text-slate-600 hover:text-brand-navy'
+                    }`}
                 >
                   My Collection
                 </button>
@@ -142,8 +140,8 @@ export default function Marketplace() {
               <article key={product.id} className="group section-card overflow-hidden hover:-translate-y-1 transition-all duration-300 bg-white animate-fade-up">
                 <div className="aspect-square bg-brand-skySoft/60 flex items-center justify-center overflow-hidden border-b border-brand-line">
                   {product.cid ? (
-                    <img 
-                      src={`https://gateway.pinata.cloud/ipfs/${product.cid}`} 
+                    <img
+                      src={`https://gateway.pinata.cloud/ipfs/${product.cid}`}
                       alt={product.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
@@ -159,7 +157,6 @@ export default function Marketplace() {
                       <span className="text-[10px] bg-brand-skySoft text-brand-navy px-2 py-0.5 rounded-full uppercase font-bold">Owned</span>
                     )}
                   </div>
-                  <p className="text-[10px] font-mono text-slate-500 mb-4 truncate italic">By: {product.owner}</p>
 
                   {viewMode === 'collection' && product.txHash && (
                     <a
@@ -171,7 +168,7 @@ export default function Marketplace() {
                       View Receipt
                     </a>
                   )}
-                  
+
                   <div className="flex items-center justify-between mt-auto">
                     <div>
                       <p className="text-[10px] text-slate-500 uppercase tracking-tighter">Price</p>
@@ -179,7 +176,7 @@ export default function Marketplace() {
                         {viewMode === 'collection' ? product.purchasedPrice : product.price} ETH
                       </p>
                     </div>
-                    
+
                     {viewMode === 'all' && (
                       <button
                         onClick={() => handleBuy(product)}

@@ -1,6 +1,3 @@
-// ============================================================
-// STUDENT 2 (S2M) — WALLET & TRANSACTION LEAD
-// ============================================================
 import { createContext, useContext, useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 // S3A provides this ABI after running 'npx hardhat compile' 
@@ -30,7 +27,7 @@ export function Web3Provider({ children }) {
    */
   const connectWallet = async () => {
     if (typeof window.ethereum === 'undefined') {
-      alert("MetaMask is not installed. Please install it to use SplitStream."); 
+      alert("MetaMask is not installed. Please install it to use SplitStream.");
       return;
     }
 
@@ -39,7 +36,7 @@ export function Web3Provider({ children }) {
 
       // --- NEW: FORCE SEPOLIA SWITCH ---
       // This ensures the popup says "Sepolia" and uses your 0.4 ETH balance
-      await ensureSepolia(); 
+      await ensureSepolia();
 
       // Request account access
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -53,7 +50,7 @@ export function Web3Provider({ children }) {
 
       // Create contract instance
       const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
-      
+
       // Safety check: ensure address isn't null/undefined before creating contract
       if (!contractAddress) {
         throw new Error("Contract address missing in .env file");
@@ -61,7 +58,7 @@ export function Web3Provider({ children }) {
 
       const splitterContract = new ethers.Contract(
         contractAddress,
-        Splitter.abi, 
+        Splitter.abi,
         signer
       );
 
@@ -85,7 +82,7 @@ export function Web3Provider({ children }) {
    * Takes CID from S4S and saves it on-chain via S1K's contract.
    */
   const registerProduct = async (cid, priceInEth) => {
-    if (!contract) throw new Error("Wallet not connected"); 
+    if (!contract) throw new Error("Wallet not connected");
 
     try {
       // priceInEth is converted to Wei for the contract [cite: 143]
@@ -147,7 +144,7 @@ export function Web3Provider({ children }) {
       try {
         const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
         if (!contractAddress) return;
-        
+
         let provider;
         if (typeof window !== 'undefined' && window.ethereum) {
           provider = new ethers.BrowserProvider(window.ethereum);
@@ -158,10 +155,10 @@ export function Web3Provider({ children }) {
 
         const readOnlyContract = new ethers.Contract(
           contractAddress,
-          Splitter.abi, 
+          Splitter.abi,
           provider
         );
-        
+
         setContract(prev => prev || readOnlyContract);
       } catch (err) {
         console.error("Failed to initialize read-only contract:", err);
@@ -203,48 +200,48 @@ export function Web3Provider({ children }) {
   }, [contract]);
 
   const ensureSepolia = async () => {
-  const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-  const sepoliaChainId = '0xaa36a7'; // Hex code for Sepolia
+    const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+    const sepoliaChainId = '0xaa36a7'; // Hex code for Sepolia
 
-  if (chainId !== sepoliaChainId) {
-    try {
-      await window.ethereum.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: sepoliaChainId }],
-      });
-    } catch (err) {
-      // This error code means the chain has not been added to MetaMask
-      if (err.code === 4902) {
+    if (chainId !== sepoliaChainId) {
+      try {
         await window.ethereum.request({
-          method: 'wallet_addEthereumChain',
-          params: [{
-            chainId: sepoliaChainId,
-            chainName: 'Sepolia Test Network',
-            nativeCurrency: { name: 'Sepolia ETH', symbol: 'SEP', decimals: 18 },
-            rpcUrls: ['https://rpc.sepolia.org'],
-            blockExplorerUrls: ['https://sepolia.etherscan.io'],
-          }],
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: sepoliaChainId }],
         });
+      } catch (err) {
+        // This error code means the chain has not been added to MetaMask
+        if (err.code === 4902) {
+          await window.ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [{
+              chainId: sepoliaChainId,
+              chainName: 'Sepolia Test Network',
+              nativeCurrency: { name: 'Sepolia ETH', symbol: 'SEP', decimals: 18 },
+              rpcUrls: ['https://rpc.sepolia.org'],
+              blockExplorerUrls: ['https://sepolia.etherscan.io'],
+            }],
+          });
+        }
       }
     }
-  }
-};
+  };
 
-const getProducts = async () => {
-  console.log("1. getProducts function called!"); // Is the function even running?
-  console.log("2. Current contract state:", contract); // Is it null or an object?
+  const getProducts = async () => {
+    console.log("1. getProducts function called!"); // Is the function even running?
+    console.log("2. Current contract state:", contract); // Is it null or an object?
 
-  if (!contract) {
-    console.log("3. Error: Contract is null, exiting getProducts");
-    return [];
-  }
-  
+    if (!contract) {
+      console.log("3. Error: Contract is null, exiting getProducts");
+      return [];
+    }
+
     try {
       const allProducts = [];
       // Grab total product count from the contract
       const count = await contract.productCount();
       const totalProducts = Number(count);
-      
+
       console.log(`Found ${totalProducts} products to fetch.`);
 
       for (let id = 0; id < totalProducts; id++) {
@@ -252,7 +249,7 @@ const getProducts = async () => {
         try {
           // Calling the singular 'getProduct' with the current ID
           const data = await contract.getProduct(id);
-          
+
           // data[0] = CID, data[1] = Owner, data[2] = Price
           allProducts.push({
             id: id.toString(),
@@ -267,116 +264,120 @@ const getProducts = async () => {
           console.log(`Failed to fetch product ${id}:`, err);
         }
       }
-      
-      console.log("Fetched Products:", allProducts);
-      return allProducts;
-  } catch (error) {
-    console.error("Marketplace fetch error:", error);
-    return [];
-  }
-};
 
-const getPurchaseEvents = async () => {
-  if (!contract) return [];
+      // Blacklist: exclude specific product IDs from marketplace display
+      const blacklistedIds = ['0']; // Artwork #0 is hidden
+      const filteredProducts = allProducts.filter(p => !blacklistedIds.includes(p.id));
 
-  try {
-    const filter = contract.filters.ProductPurchased();
-    const logs = await contract.queryFilter(filter, DEPLOYMENT_BLOCK, 'latest');
+      console.log("Fetched Products:", filteredProducts);
+      return filteredProducts;
+    } catch (error) {
+      console.error("Marketplace fetch error:", error);
+      return [];
+    }
+  };
 
-    return logs.map((log) => {
-      const productId = Number(log.args?.id ?? log.args?.[0] ?? 0);
-      const buyer = log.args?.buyer ?? log.args?.[1] ?? '';
-      const amount = log.args?.amount ?? log.args?.[2] ?? 0;
+  const getPurchaseEvents = async () => {
+    if (!contract) return [];
 
-      return {
-        productId,
-        buyer,
-        amountEth: ethers.formatEther(amount),
-        txHash: log.transactionHash,
-        blockNumber: log.blockNumber,
-      };
-    });
-  } catch (error) {
-    console.error('Error fetching purchase history:', error);
-    return [];
-  }
-};
+    try {
+      const filter = contract.filters.ProductPurchased();
+      const logs = await contract.queryFilter(filter, DEPLOYMENT_BLOCK, 'latest');
 
-const getBuyerPurchases = async (buyerAddress) => {
-  if (!buyerAddress) return [];
-
-  try {
-    const [events, allProducts] = await Promise.all([
-      getPurchaseEvents(),
-      getProducts(),
-    ]);
-
-    const targetBuyer = normalizeAddress(buyerAddress);
-    const productMap = new Map(allProducts.map((product) => [Number(product.id), product]));
-
-    return events
-      .filter((sale) => normalizeAddress(sale.buyer) === targetBuyer)
-      .map((sale) => {
-        const product = productMap.get(sale.productId);
-        if (!product) return null;
+      return logs.map((log) => {
+        const productId = Number(log.args?.id ?? log.args?.[0] ?? 0);
+        const buyer = log.args?.buyer ?? log.args?.[1] ?? '';
+        const amount = log.args?.amount ?? log.args?.[2] ?? 0;
 
         return {
-          ...product,
-          txHash: sale.txHash,
-          buyer: sale.buyer,
-          purchasedPrice: sale.amountEth,
-          purchasedAtBlock: sale.blockNumber,
+          productId,
+          buyer,
+          amountEth: ethers.formatEther(amount),
+          txHash: log.transactionHash,
+          blockNumber: log.blockNumber,
         };
-      })
-      .filter(Boolean)
-      .sort((a, b) => b.purchasedAtBlock - a.purchasedAtBlock);
-  } catch (error) {
-    console.error('Error building buyer collection:', error);
-    return [];
-  }
-};
+      });
+    } catch (error) {
+      console.error('Error fetching purchase history:', error);
+      return [];
+    }
+  };
 
-const getArtistDashboardStats = async (artistAddress) => {
-  if (!artistAddress) {
-    return {
-      artistProducts: [],
-      worksUploaded: 0,
-      totalSales: 0,
-      revenueReceived: '0',
-    };
-  }
+  const getBuyerPurchases = async (buyerAddress) => {
+    if (!buyerAddress) return [];
 
-  try {
-    const [allProducts, events, revenueReceived] = await Promise.all([
-      getProducts(),
-      getPurchaseEvents(),
-      getArtistBalance(artistAddress),
-    ]);
+    try {
+      const [events, allProducts] = await Promise.all([
+        getPurchaseEvents(),
+        getProducts(),
+      ]);
 
-    const normalizedArtist = normalizeAddress(artistAddress);
-    const artistProducts = allProducts.filter(
-      (product) => normalizeAddress(product.owner) === normalizedArtist
-    );
+      const targetBuyer = normalizeAddress(buyerAddress);
+      const productMap = new Map(allProducts.map((product) => [Number(product.id), product]));
 
-    const artistProductIds = new Set(artistProducts.map((product) => Number(product.id)));
-    const totalSales = events.filter((sale) => artistProductIds.has(sale.productId)).length;
+      return events
+        .filter((sale) => normalizeAddress(sale.buyer) === targetBuyer)
+        .map((sale) => {
+          const product = productMap.get(sale.productId);
+          if (!product) return null;
 
-    return {
-      artistProducts,
-      worksUploaded: artistProducts.length,
-      totalSales,
-      revenueReceived,
-    };
-  } catch (error) {
-    console.error('Error building artist dashboard stats:', error);
-    return {
-      artistProducts: [],
-      worksUploaded: 0,
-      totalSales: 0,
-      revenueReceived: '0',
-    };
-  }
-};
+          return {
+            ...product,
+            txHash: sale.txHash,
+            buyer: sale.buyer,
+            purchasedPrice: sale.amountEth,
+            purchasedAtBlock: sale.blockNumber,
+          };
+        })
+        .filter(Boolean)
+        .sort((a, b) => b.purchasedAtBlock - a.purchasedAtBlock);
+    } catch (error) {
+      console.error('Error building buyer collection:', error);
+      return [];
+    }
+  };
+
+  const getArtistDashboardStats = async (artistAddress) => {
+    if (!artistAddress) {
+      return {
+        artistProducts: [],
+        worksUploaded: 0,
+        totalSales: 0,
+        revenueReceived: '0',
+      };
+    }
+
+    try {
+      const [allProducts, events, revenueReceived] = await Promise.all([
+        getProducts(),
+        getPurchaseEvents(),
+        getArtistBalance(artistAddress),
+      ]);
+
+      const normalizedArtist = normalizeAddress(artistAddress);
+      const artistProducts = allProducts.filter(
+        (product) => normalizeAddress(product.owner) === normalizedArtist
+      );
+
+      const artistProductIds = new Set(artistProducts.map((product) => Number(product.id)));
+      const totalSales = events.filter((sale) => artistProductIds.has(sale.productId)).length;
+
+      return {
+        artistProducts,
+        worksUploaded: artistProducts.length,
+        totalSales,
+        revenueReceived,
+      };
+    } catch (error) {
+      console.error('Error building artist dashboard stats:', error);
+      return {
+        artistProducts: [],
+        worksUploaded: 0,
+        totalSales: 0,
+        revenueReceived: '0',
+      };
+    }
+  };
 
 
 
