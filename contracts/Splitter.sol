@@ -1,31 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-// ============================================================
-// STUDENT 1 — MAIN DELIVERABLE
-// ============================================================
-// Purpose: Accept ETH payments and automatically split them
-//          between registered artists based on their percentages.
-//
-// WEEK 1 TASKS:
-// ✔ Define the Artist struct (address + percentage)
-// ✔ Write the constructor to set up the artists array
-// ✔ Add the receive() function so the contract can accept ETH
-// ✔ Write distribute() — loops over artists, sends each their share
-//
-// WEEK 2 TASKS:
-// ✔ Add a products mapping: productId => CID string
-// ✔ Write registerProduct(string cid) — stores CID on-chain
-// ✔ Write getArtistBalance(address) — so the dashboard can read balances
-// ✔ Add events for audit trail
-// ✔ Write tests in /test/Splitter.test.js
-//
-// KEY CONCEPT — distribute() logic:
-//   share = (msg.value * artist.percentage) / 100
-//
-// ⚠️ IMPORTANT: Percentages must add up to exactly 100.
-// ============================================================
-
+/// @title Splitter
+/// @notice A minimal art marketplace: artists register IPFS-hosted works with a price,
+///         and every purchase is split between a fixed set of payout wallets.
+/// @dev Payout wallets and percentages are set once in the constructor and must total 100.
+///      share = (msg.value * artist.percentage) / 100
 contract Splitter {
 
     // ============================================================
@@ -108,7 +88,7 @@ contract Splitter {
     }
 
     // ============================================================
-    // PRODUCT REGISTRATION (WEEK 2)
+    // PRODUCT REGISTRATION
     // ============================================================
 
     function registerProduct(string memory _cid, uint256 _price) public {

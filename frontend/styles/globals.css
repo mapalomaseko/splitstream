@@ -1,8 +1,4 @@
-/* ============================================================
-   STUDENT 4 — GLOBAL STYLES
-   ============================================================
-   Tailwind base imports. Add any global overrides below.
-   ============================================================ */
+/* Global styles: fonts, Tailwind layers and shared component classes. */
 
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Space+Grotesk:wght@500;700&display=swap');
 

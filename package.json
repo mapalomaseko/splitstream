@@ -1,7 +1,7 @@
 {
-  "name": "blockchain-art-platform",
+  "name": "splitstream",
   "version": "1.0.0",
-  "description": "Decentralized art marketplace with automatic revenue splitting",
+  "description": "SplitStream smart contracts: an art marketplace that splits every sale between artists automatically",
   "scripts": {
     "compile": "npx hardhat compile",
     "test": "npx hardhat test",

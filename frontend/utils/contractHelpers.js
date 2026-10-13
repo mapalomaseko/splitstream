@@ -1,9 +1,7 @@
-
 import { ethers } from 'ethers';
 
 /**
  * Shortens a wallet address for display: 0x1234...5678
- * Used by S4S in Navbar.js and ConnectWallet.js.
  */
 export function formatAddress(address) {
   if (!address || typeof address !== 'string') return '';
@@ -14,7 +12,7 @@ export function formatAddress(address) {
 
 /**
  * Converts ETH string/number to Wei (BigInt)
- * Essential for buyProduct() and registerProduct() transactions[cite: 143].
+ * Essential for buyProduct() and registerProduct() transactions.
  */
 export function toWei(ethAmount) {
   if (!ethAmount) return 0n;
@@ -28,7 +26,7 @@ export function toWei(ethAmount) {
 
 /**
  * Converts Wei (BigInt) to a readable ETH string
- * Used for displaying the "Pending Balance" in the Artist Dashboard[cite: 25, 143].
+ * Used for displaying the "Pending Balance" in the artist dashboard.
  */
 export function fromWei(weiAmount) {
   if (!weiAmount) return "0.0";
@@ -42,7 +40,7 @@ export function fromWei(weiAmount) {
 
 /**
  * Checks if a string is a valid Ethereum address
- * Useful for validating artist addresses before S1K's contract tries to use them.
+ * Useful for validating artist addresses before passing them to the contract.
  */
 export function isValidAddress(address) {
   return ethers.isAddress(address);
@@ -50,7 +48,6 @@ export function isValidAddress(address) {
 
 /**
  * Formats a decimal number to a fixed decimal place for cleaner UI
- * (Handy for S4S when displaying prices in the marketplace)
  */
 export function formatDisplayEth(weiAmount, decimals = 4) {
   const eth = fromWei(weiAmount);

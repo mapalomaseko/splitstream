@@ -1,14 +1,17 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { ethers } from 'ethers';
-// S3A provides this ABI after running 'npx hardhat compile' 
 import Splitter from '../abi/Splitter.json';
 
 const Web3Context = createContext();
-const TEAM_ARTIST_ADDRESSES = [
-  '0x8F2eDFfB8a634929616B853B7d1743dC7A7eDbEF',
-  '0xAE9e2CD45cAce72d144a606c73320d318a49F4D0',
-  '0xF9d984985935e72Ae3F0055775B7d72dc37fb53f',
-].map((address) => address.toLowerCase());
+
+// Parses a comma-separated env var into a list of trimmed, non-empty values.
+const parseList = (value) => (value || '').split(',').map((item) => item.trim()).filter(Boolean);
+
+// Wallets that see the artist dashboard (the payout addresses the contract was deployed with).
+const ARTIST_ADDRESSES = parseList(process.env.NEXT_PUBLIC_ARTIST_ADDRESSES).map((address) => address.toLowerCase());
+
+// Product IDs to hide from the marketplace (e.g. test uploads).
+const HIDDEN_PRODUCT_IDS = parseList(process.env.NEXT_PUBLIC_HIDDEN_PRODUCT_IDS);
 
 const DEPLOYMENT_BLOCK = Number.parseInt(process.env.NEXT_PUBLIC_DEPLOY_BLOCK || '0', 10) || 0;
 
@@ -21,10 +24,7 @@ export function Web3Provider({ children }) {
   const [isArtist, setIsArtist] = useState(false);
   const [salesActivity, setSalesActivity] = useState(0);
 
-  /**
-   * WEEK 1: Connect Wallet Logic [cite: 36, 143]
-   * Asks MetaMask to connect and stores the signer for transactions.
-   */
+  // Connects MetaMask, switches it to Sepolia and creates a signer-backed contract instance.
   const connectWallet = async () => {
     if (typeof window.ethereum === 'undefined') {
       alert("MetaMask is not installed. Please install it to use SplitStream.");
@@ -34,8 +34,6 @@ export function Web3Provider({ children }) {
     try {
       setIsConnecting(true);
 
-      // --- NEW: FORCE SEPOLIA SWITCH ---
-      // This ensures the popup says "Sepolia" and uses your 0.4 ETH balance
       await ensureSepolia();
 
       // Request account access
@@ -63,7 +61,6 @@ export function Web3Provider({ children }) {
       );
 
       setContract(splitterContract);
-      console.log("Wallet Connected to Sepolia:", address);
 
     } catch (error) {
       // Handle user rejection or network switch cancellation
@@ -77,18 +74,14 @@ export function Web3Provider({ children }) {
     }
   };
 
-  /**
-   * WEEK 2: Register Product [cite: 18, 143]
-   * Takes CID from S4S and saves it on-chain via S1K's contract.
-   */
+  // Stores an IPFS CID and its price on-chain.
   const registerProduct = async (cid, priceInEth) => {
     if (!contract) throw new Error("Wallet not connected");
 
     try {
-      // priceInEth is converted to Wei for the contract [cite: 143]
-      // Ensure the price is a string before parsing to Ether
+      // The contract expects the price in wei
       const tx = await contract.registerProduct(cid, ethers.parseEther(priceInEth.toString()));
-      await tx.wait(); // Wait for block confirmation [cite: 80]
+      await tx.wait(); // Wait for block confirmation
       return tx.hash;
     } catch (error) {
       console.error("Registration failed:", error);
@@ -96,15 +89,11 @@ export function Web3Provider({ children }) {
     }
   };
 
-  /**
-   * WEEK 2: Buy Product [cite: 68, 143]
-   * Triggers MetaMask popup for the buyer.
-   */
+  // Pays for a product; the contract splits the ETH between the artists.
   const buyProduct = async (productId, priceInEth) => {
     if (!contract) throw new Error("Wallet not connected");
 
     try {
-      // Sends ETH to the contract's buy function [cite: 116, 163]
       const tx = await contract.buyProduct(productId, {
         value: ethers.parseEther(priceInEth)
       });
@@ -116,14 +105,10 @@ export function Web3Provider({ children }) {
     }
   };
 
-  /**
-   * WEEK 2: Get Artist Balance [cite: 25, 143]
-   * Reads "Pending Balance" directly from the contract (no gas cost).
-   */
+  // Total ETH an artist has received from the contract so far.
   const getArtistBalance = async (address) => {
     if (!contract || !address) return "0";
     try {
-      // Call the mapping in Splitter.sol [cite: 155, 202]
       const balance = await contract.getArtistBalance(address);
       return ethers.formatEther(balance);
     } catch (error) {
@@ -135,7 +120,7 @@ export function Web3Provider({ children }) {
   // Keep role state in sync with the active account.
   useEffect(() => {
     const connected = normalizeAddress(walletAddress);
-    setIsArtist(TEAM_ARTIST_ADDRESSES.includes(connected));
+    setIsArtist(ARTIST_ADDRESSES.includes(connected));
   }, [walletAddress]);
 
   // Initialize a read-only contract on load so marketplace works without wallet
@@ -228,13 +213,7 @@ export function Web3Provider({ children }) {
   };
 
   const getProducts = async () => {
-    console.log("1. getProducts function called!"); // Is the function even running?
-    console.log("2. Current contract state:", contract); // Is it null or an object?
-
-    if (!contract) {
-      console.log("3. Error: Contract is null, exiting getProducts");
-      return [];
-    }
+    if (!contract) return [];
 
     try {
       const allProducts = [];
@@ -242,12 +221,8 @@ export function Web3Provider({ children }) {
       const count = await contract.productCount();
       const totalProducts = Number(count);
 
-      console.log(`Found ${totalProducts} products to fetch.`);
-
       for (let id = 0; id < totalProducts; id++) {
-        console.log("Fetching ID:", id);
         try {
-          // Calling the singular 'getProduct' with the current ID
           const data = await contract.getProduct(id);
 
           // data[0] = CID, data[1] = Owner, data[2] = Price
@@ -256,21 +231,14 @@ export function Web3Provider({ children }) {
             cid: data[0],
             owner: data[1],
             price: ethers.formatEther(data[2]),
-            title: `Artwork #${id}`, // Since the ABI doesn't show a title
-            // A product is sold if the contract's "owner/creator" is updated or isn't tracked properly, 
-            // but for now we follow the structure
+            title: `Artwork #${id}`, // The contract doesn't store titles
           });
         } catch (err) {
-          console.log(`Failed to fetch product ${id}:`, err);
+          console.error(`Failed to fetch product ${id}:`, err);
         }
       }
 
-      // Blacklist: exclude specific product IDs from marketplace display
-      const blacklistedIds = ['0']; // Artwork #0 is hidden
-      const filteredProducts = allProducts.filter(p => !blacklistedIds.includes(p.id));
-
-      console.log("Fetched Products:", filteredProducts);
-      return filteredProducts;
+      return allProducts.filter((p) => !HIDDEN_PRODUCT_IDS.includes(p.id));
     } catch (error) {
       console.error("Marketplace fetch error:", error);
       return [];
@@ -378,8 +346,6 @@ export function Web3Provider({ children }) {
       };
     }
   };
-
-
 
   return (
     <Web3Context.Provider value={{

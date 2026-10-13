@@ -1,6 +1,10 @@
-# Environment variables — NEVER commit this
+# Environment variables — NEVER commit these
 .env
+.env.*
+!.env.example
 frontend/.env
+frontend/.env.*
+!frontend/.env.example
 
 # Dependencies
 node_modules/
